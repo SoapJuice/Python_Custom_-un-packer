@@ -59,6 +59,9 @@ def list_packed_files(packed_file):
 
     Args:
         packed_file (str): The packed file to read from.
+
+    Prints:
+        The list of files in the packed file.
     """
     if not os.path.exists(packed_file):
         print(f"Packed file not found: {packed_file}")
@@ -86,7 +89,6 @@ def list_packed_files(packed_file):
     except Exception as e:
         print(f"Error reading packed file: {e}")
 
-
 def unpack_files(packed_file, target_dir):
     """
     Unpack files from a packed file into a specified directory.
@@ -94,6 +96,9 @@ def unpack_files(packed_file, target_dir):
     Args:
         packed_file (str): The packed file to read from.
         target_dir (str): The directory where the files will be unpacked.
+
+    Prints:
+        The name of each unpacked file along with the character count.
     """
     if not os.path.exists(packed_file):
         print(f"Packed file not found: {packed_file}")
@@ -131,6 +136,16 @@ def unpack_files(packed_file, target_dir):
         print(f"Error unpacking file: {e}")
 
 def main():
+    """
+    The main function that provides a menu for packing, listing, unpacking files, or exiting the script.
+
+    Prompts:
+        - Mode selection: 'pack', 'list', 'unpack', or 'exit'.
+        - Input paths, output file names, and target directories as needed.
+
+    Prints:
+        Messages indicating the progress or errors in the selected operation.
+    """
     while True:
         print("\nEnter the mode (pack/list/unpack/exit):")
         mode = input().strip().lower()
@@ -138,7 +153,7 @@ def main():
         if mode == "pack":
             print("Enter the file paths to pack, separated by commas:")
             inputs = input().split(",")
-            inputs = [path.strip() for path in inputs]  # Remove extra spaces
+            inputs = [path.strip() for path in inputs]
 
             print("Enter the name of the output file (e.g., output.txt):")
             output_file = input().strip()
