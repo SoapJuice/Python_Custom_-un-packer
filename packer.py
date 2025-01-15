@@ -77,10 +77,10 @@ def list_packed_files(packed_file):
 
                 if line == b"-------File Location-------":
                     file_location = infile.readline().strip().decode('utf-8')
-                    print(file_location)
 
                 elif line == b"-------Character Count-------":
                     char_count = int(infile.readline().strip().decode('utf-8'))
+                    print(f"{file_location} {char_count}")
                     infile.seek(char_count, os.SEEK_CUR)
 
                 elif line == b"-------End of File-------":
@@ -135,6 +135,66 @@ def unpack_files(packed_file, target_dir):
     except Exception as e:
         print(f"Error unpacking file: {e}")
 
+def unpack_specific_file(packed_file, target_dir, specific_file):
+    """
+    Unpack a specific file from a packed file into a specified directory.
+
+    Args:
+        packed_file (str): The packed file to read from.
+        target_dir (str): The directory where the file will be unpacked.
+        specific_file (str): The relative path of the file to unpack.
+
+    Prints:
+        The name of the unpacked file and its character count, or an error if the file is not found.
+    """
+    if not os.path.exists(packed_file):
+        print(f"Packed file not found: {packed_file}")
+        return
+
+    if not os.path.exists(target_dir):
+        os.makedirs(target_dir)
+
+    try:
+        with open(packed_file, 'rb') as infile:
+            file_location = None
+            char_count = None
+
+            while True:
+                line = infile.readline()
+                if not line:
+                    break  # EOF
+                line = line.strip()
+
+                if line == b"-------File Location-------":
+                    file_location = infile.readline().strip().decode('utf-8')
+
+                if file_location == specific_file:
+                    line = infile.readline().strip()
+                    if line == b"-------Character Count-------":
+                        char_count = int(infile.readline().strip().decode('utf-8'))
+
+                    line = infile.readline().strip()
+                    if line == b"-------File Content-------":
+                        content = infile.read(char_count)
+                        file_path = os.path.join(target_dir, file_location)
+                        os.makedirs(os.path.dirname(file_path), exist_ok=True)
+                        with open(file_path, 'wb') as file_out:
+                            file_out.write(content)
+                        print(f"Unpacked: {file_location} ({char_count} characters)")
+                        return
+
+                elif line == b"-------Character Count-------":
+                    char_count = int(infile.readline().strip().decode('utf-8'))
+                    infile.seek(char_count, os.SEEK_CUR)
+
+                elif line == b"-------End of File-------":
+                    file_location = None
+                    char_count = None
+
+            print(f"File not found in packed file: {specific_file}")
+    except Exception as e:
+        print(f"Error unpacking specific file: {e}")
+
 def main():
     """
     The main function that provides a menu for packing, listing, unpacking files, or exiting the script.
@@ -147,7 +207,7 @@ def main():
         Messages indicating the progress or errors in the selected operation.
     """
     while True:
-        print("\nEnter the mode (pack/list/unpack/exit):")
+        print("\nEnter the mode (pack/list/unpack/unpack-specific/exit):")
         mode = input().strip().lower()
 
         if mode == "pack":
@@ -175,6 +235,19 @@ def main():
             target_dir = input().strip()
 
             unpack_files(packed_file, target_dir)
+
+        elif mode == "unpack-specific":
+            print("Enter the name of the packed file to unpack from (e.g., output.txt):")
+            packed_file = input().strip()
+
+            print("Enter the target directory to unpack the file into:")
+            target_dir = input().strip()
+
+            print("Enter the relative path of the specific file to unpack:")
+            specific_file = input().strip()
+
+            unpack_specific_file(packed_file, target_dir, specific_file)
+
 
         elif mode == "exit":
             print("Exiting the script. Goodbye!")
